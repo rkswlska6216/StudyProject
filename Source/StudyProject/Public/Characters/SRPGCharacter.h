@@ -12,6 +12,7 @@ class STUDYPROJECT_API ASRPGCharacter : public ASCharacter
 {
     GENERATED_BODY()
 
+    friend class UAN_CheckHit;
 public:
     ASRPGCharacter();
 
@@ -23,6 +24,9 @@ public:
 
     UFUNCTION()
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+    virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 
 
 protected:
@@ -45,6 +49,10 @@ private:
 
     UFUNCTION()
     void EndCombo(class UAnimMontage* InAnimMontage, bool bInterrupted);
+
+    float AttackRange = 200.f;
+
+    float AttackRadius = 50.f;
 
 private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))

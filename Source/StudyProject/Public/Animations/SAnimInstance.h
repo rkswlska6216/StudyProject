@@ -33,6 +33,8 @@ private:
     UFUNCTION()
     void AnimNotify_CheckCanNextCombo();
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "USAnimInstance", Meta = (AllowPrivateAccess))
+    uint8 bIsDead : 1;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "USAnimInstance")
