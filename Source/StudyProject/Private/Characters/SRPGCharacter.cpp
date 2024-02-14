@@ -15,6 +15,8 @@
 #include "Animations/SAnimInstance.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
+#include "Particles/ParticleSystemComponent.h"
+
 
 ASRPGCharacter::ASRPGCharacter() : bIsAttacking(false)
 {
@@ -36,6 +38,10 @@ ASRPGCharacter::ASRPGCharacter() : bIsAttacking(false)
     GetCharacterMovement()->bUseControllerDesiredRotation = false;
     GetCharacterMovement()->RotationRate = FRotator(0.f, 480.f, 0.f);
     GetCapsuleComponent()->SetCollisionProfileName(TEXT("SCharacter"));
+
+    ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+    ParticleSystemComponent->SetupAttachment(GetRootComponent());
+    ParticleSystemComponent->SetAutoActivate(false);
 }
 
 void ASRPGCharacter::BeginPlay()
@@ -58,6 +64,16 @@ void ASRPGCharacter::BeginPlay()
         AnimInstance->OnCheckHitDelegate.AddDynamic(this, &ThisClass::CheckHit);
         AnimInstance->OnCheckCanNextComboDelegate.AddDynamic(this, &ThisClass::CheckCanNextCombo);
     
+    }
+}
+
+void ASRPGCharacter::SetCurrentEXP(float InCurrentEXP)
+{
+    CurrentEXP = FMath::Clamp(CurrentEXP + InCurrentEXP, 0.f, MaxEXP);
+    if (MaxEXP - KINDA_SMALL_NUMBER < CurrentEXP)
+    {
+        CurrentEXP = 0.f;
+        ParticleSystemComponent->Activate(true);
     }
 }
 
