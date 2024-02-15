@@ -27,16 +27,11 @@ public:
 
     virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
-    float GetMaxEXP() const { return MaxEXP; }
-
-    float GetCurrentEXP() const { return CurrentEXP; }
-
-    void SetMaxEXP(float InMaxEXP) { MaxEXP = InMaxEXP; }
-
-    void SetCurrentEXP(float InCurrentEXP);
+  
 
 protected:
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
 
 private:
     void Move(const FInputActionValue& InValue);
@@ -44,6 +39,9 @@ private:
     void Look(const FInputActionValue& InValue);
 
     void Attack(const FInputActionValue& InValue);
+
+    UFUNCTION()
+    void OnAssetLoaded();
 
     UFUNCTION()
     void CheckHit();
@@ -59,6 +57,10 @@ private:
     float AttackRange = 200.f;
 
     float AttackRadius = 50.f;
+
+    UFUNCTION()
+    void OnCurrentLevelChanged(int32 InOldCurrentLevel, int32 InNewCurrentLevel);
+
 
 private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
@@ -86,9 +88,9 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
     TObjectPtr<class UParticleSystemComponent> ParticleSystemComponent;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
-    float MaxEXP = 10;
+    FSoftObjectPath CurrentPlayerCharacterMeshPath = FSoftObjectPath();
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ASRPGCharacter", Meta = (AllowPrivateAccess))
-    float CurrentEXP = 0;
+    TSharedPtr<struct FStreamableHandle> AssetStreamableHandle = nullptr;
+
+
 };

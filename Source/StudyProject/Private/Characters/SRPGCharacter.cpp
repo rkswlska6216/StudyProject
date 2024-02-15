@@ -16,7 +16,10 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/DamageEvents.h"
 #include "Particles/ParticleSystemComponent.h"
-
+#include "Game/SPlayerState.h"
+#include "SPlayerCharacterSettings.h"
+#include "Game/SGameInstance.h"
+#include "Engine/StreamableManager.h"
 
 ASRPGCharacter::ASRPGCharacter() : bIsAttacking(false)
 {
@@ -42,6 +45,15 @@ ASRPGCharacter::ASRPGCharacter() : bIsAttacking(false)
     ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
     ParticleSystemComponent->SetupAttachment(GetRootComponent());
     ParticleSystemComponent->SetAutoActivate(false);
+
+    const USPlayerCharacterSettings* CDO = GetDefault<USPlayerCharacterSettings>();
+    if (0 < CDO->PlayerCharacterMeshPaths.Num())
+    {
+        for (FSoftObjectPath PlayerCharacterMeshPath : CDO->PlayerCharacterMeshPaths)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Path: %s"), *(PlayerCharacterMeshPath.ToString()));
+        }
+    }
 }
 
 void ASRPGCharacter::BeginPlay()
@@ -65,15 +77,37 @@ void ASRPGCharacter::BeginPlay()
         AnimInstance->OnCheckCanNextComboDelegate.AddDynamic(this, &ThisClass::CheckCanNextCombo);
     
     }
+
+    ASPlayerState* PS = GetPlayerState<ASPlayerState>();
+    if (true == ::IsValid(PS))
+    {
+        if (false == PS->OnCurrentLevelChangedDelegate.IsAlreadyBound(this, &ThisClass::OnCurrentLevelChanged))
+        {
+            PS->OnCurrentLevelChangedDelegate.AddDynamic(this, &ThisClass::OnCurrentLevelChanged);
+        }
+    }
+
+    const USPlayerCharacterSettings* CDO = GetDefault<USPlayerCharacterSettings>();
+    int32 RandIndex = FMath::RandRange(0, CDO->PlayerCharacterMeshPaths.Num() - 1);
+    CurrentPlayerCharacterMeshPath = CDO->PlayerCharacterMeshPaths[RandIndex];
+
+    USGameInstance* SGI = Cast<USGameInstance>(GetGameInstance());
+    if (true == ::IsValid(SGI))
+    {
+        AssetStreamableHandle = SGI->StreamableManager.RequestAsyncLoad(
+            CurrentPlayerCharacterMeshPath,
+            FStreamableDelegate::CreateUObject(this, &ThisClass::OnAssetLoaded)
+        );
+    }
 }
 
-void ASRPGCharacter::SetCurrentEXP(float InCurrentEXP)
+void ASRPGCharacter::OnAssetLoaded()
 {
-    CurrentEXP = FMath::Clamp(CurrentEXP + InCurrentEXP, 0.f, MaxEXP);
-    if (MaxEXP - KINDA_SMALL_NUMBER < CurrentEXP)
+    AssetStreamableHandle->ReleaseHandle();
+    TSoftObjectPtr<USkeletalMesh> LoadedAsset(CurrentPlayerCharacterMeshPath);
+    if (true == LoadedAsset.IsValid())
     {
-        CurrentEXP = 0.f;
-        ParticleSystemComponent->Activate(true);
+        GetMesh()->SetSkeletalMesh(LoadedAsset.Get());
     }
 }
 
@@ -94,6 +128,11 @@ void ASRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
     }
+}
+
+void ASRPGCharacter::OnCurrentLevelChanged(int32 InOldCurrentLevel, int32 InNewCurrentLevel)
+{
+    ParticleSystemComponent->Activate(true);
 }
 
 void ASRPGCharacter::Move(const FInputActionValue& InValue)
@@ -238,6 +277,7 @@ float ASRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 {
     float FinalDamageAmount = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 
+    /*
     CurrentHP = FMath::Clamp(CurrentHP - FinalDamageAmount, 0.f, MaxHP);
 
     if (CurrentHP < KINDA_SMALL_NUMBER)
@@ -249,6 +289,7 @@ float ASRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
     }
 
     UKismetSystemLibrary::PrintString(this, FString::Printf(TEXT("%s [%.1f / %.1f]"), *GetName(), CurrentHP, MaxHP));
+    */
 
     return FinalDamageAmount;
 }
