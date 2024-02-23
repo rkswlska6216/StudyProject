@@ -92,5 +92,7 @@ private:
 
     TSharedPtr<struct FStreamableHandle> AssetStreamableHandle = nullptr;
 
+    void Menu(const FInputActionValue& InValue);
+
 
 };

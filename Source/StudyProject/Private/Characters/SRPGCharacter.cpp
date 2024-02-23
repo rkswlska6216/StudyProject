@@ -19,6 +19,7 @@
 #include "Game/SPlayerState.h"
 #include "SPlayerCharacterSettings.h"
 #include "Game/SGameInstance.h"
+#include "Controllers/SPlayerController.h"
 #include "Engine/StreamableManager.h"
 
 ASRPGCharacter::ASRPGCharacter() : bIsAttacking(false)
@@ -127,6 +128,7 @@ void ASRPGCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->LookAction, ETriggerEvent::Triggered, this, &ThisClass::Look);
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
         EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->AttackAction, ETriggerEvent::Started, this, &ThisClass::Attack);
+        EnhancedInputComponent->BindAction(PlayerCharacterInputConfigData->MenuAction, ETriggerEvent::Started, this, &ThisClass::Menu);
     }
 }
 
@@ -292,4 +294,13 @@ float ASRPGCharacter::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
     */
 
     return FinalDamageAmount;
+}
+
+void ASRPGCharacter::Menu(const FInputActionValue& InValue)
+{
+    ASPlayerController* PlayerController = GetController<ASPlayerController>();
+    if (true == ::IsValid(PlayerController))
+    {
+        PlayerController->ToggleMenu();
+    }
 }

@@ -16,6 +16,7 @@ class STUDYPROJECT_API ASPlayerController : public APlayerController
 public:
     ASPlayerController();
 	class USHUD* GetHUDWidget() const { return HUDWidget; };
+    void ToggleMenu();
 protected:
     virtual void BeginPlay() override;
     UPROPERTY();
@@ -23,5 +24,16 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "ASPlayerController", Meta = (AllowPrivateAccess));
     TSubclassOf<class USHUD> HUDWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ASPlayerController, Meta = (AllowPrivateAccess))
+    TSubclassOf<class UUserWidget> MenuUIClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ASPlayerController, Meta = (AllowPrivateAccess))
+    TObjectPtr<class UUserWidget> MenuUIInstance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = ASPlayerController, Meta = (AllowPrivateAccess))
+    TSubclassOf<class UUserWidget> CrosshairUIClass;
+
+    bool bIsMenuOn = false;
 
 };

@@ -20,10 +20,10 @@ public:
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxHP;
+    float MaxHP=100;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MaxEXP;
+    float MaxEXP=100;
 
 };
 
